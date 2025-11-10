@@ -1,0 +1,106 @@
+version: '3.8'
+services:
+
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+      - "29092:29092"
+    environment:
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://0.0.0.0:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENER_NAME_EXTERNAL_HOSTNAME=localhost
+      - ALLOW_PLAINTEXT_LISTENER=yes
+
+  hdfs-namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
+    container_name: hdfs-namenode
+    environment:
+      - CLUSTER_NAME=test
+    ports:
+      - "9870:9870"
+    volumes:
+      - hdfs-nn-data:/hadoop/dfs/name
+
+  hdfs-datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
+    container_name: hdfs-datanode
+    environment:
+      - CLUSTER_NAME=test
+    volumes:
+      - hdfs-dn-data:/hadoop/dfs/data
+    depends_on:
+      - hdfs-namenode
+
+  hbase:
+    image: harisekhon/hbase
+    container_name: hbase
+    ports:
+      - "16010:16010"   # Master UI
+      - "16030:16030"   # RegionServer UI
+      - "9090:9090"     # Thrift RPC
+    environment:
+      - HBASE_MANAGES_ZK=false
+    depends_on:
+      - hdfs-namenode
+      - hdfs-datanode
+#    command: >
+#      bash -c "
+#        /hbase/bin/start-hbase.sh hbase &&
+#        sleep 5 &&
+#        /hbase/bin/hbase-daemon.sh start thrift &&
+#        tail -f /dev/null
+#      "
+
+  redis:
+    image: redis:6.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: logistics
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  spark:
+    image: bitnami/spark:3.4
+    container_name: spark
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "8080:8080"
+    volumes:
+      - spark-data:/bitnami
+
+  spark-worker:
+    image: bitnami/spark:3.4
+    container_name: spark-worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark:7077
+    depends_on:
+      - spark
+
+volumes:
+  hdfs-nn-data:
+  hdfs-dn-data:
+  redis-data:
+  mysql-data:
+  spark-data:
+

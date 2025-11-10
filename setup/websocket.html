@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket 测试</title>
+</head>
+<body>
+  <h2>🚛 WebSocket 车辆消息测试</h2>
+
+  <div>
+    <strong>收到消息：</strong>
+    <pre id="messages"></pre>
+  </div>
+
+  <script>
+    // 设置 WebSocket 地址（根据你的服务地址修改）
+    const socket = new WebSocket("ws://localhost:5793/ws/vehicle");
+
+    socket.onopen = () => {
+      console.log("✅ WebSocket 已连接");
+      document.getElementById("messages").textContent += "已连接到服务器\n";
+    };
+
+    socket.onmessage = (event) => {
+      console.log("📩 收到消息：", event.data);
+      document.getElementById("messages").textContent += event.data + "\n";
+    };
+
+    socket.onclose = () => {
+      console.warn("❌ WebSocket 已关闭");
+      document.getElementById("messages").textContent += "连接已关闭\n";
+    };
+
+    socket.onerror = (err) => {
+      console.error("💥 WebSocket 错误：", err);
+      document.getElementById("messages").textContent += "发生错误\n";
+    };
+  </script>
+</body>
+</html>
