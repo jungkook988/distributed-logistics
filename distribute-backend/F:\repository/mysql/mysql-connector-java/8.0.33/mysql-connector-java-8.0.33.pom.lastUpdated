@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Sep 27 14:37:48 CST 2025
+@default-nexus-aliyun-http\://maven.aliyun.com/nexus/content/groups/public/.lastUpdated=1758955068842
+http\://maven.aliyun.com/nexus/content/groups/public/.error=Could not transfer artifact mysql\:mysql-connector-java\:pom\:8.0.33 from/to nexus-aliyun (http\://maven.aliyun.com/nexus/content/groups/public)\: The operation was cancelled.
